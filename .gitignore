@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Xcode build products and derived data
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcresult
+
+# Xcode settings specific to each user
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager generated files
+.build/
+.swiftpm/
+# Keep Package.resolved tracked for reproducible app dependencies.
+
+# Swift Playgrounds generated files
+timeline.xctimeline
+playground.xcworkspace
+
+# Carthage build products
+Carthage/Build/
+
+# fastlane generated reports and screenshots
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
