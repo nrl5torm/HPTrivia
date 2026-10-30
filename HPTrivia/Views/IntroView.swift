@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  IntroView.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 29/10/2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct IntroView: View {
     @State private var animateViewsIn = false
     
     var body: some View {
@@ -61,5 +61,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    IntroView()
 }
