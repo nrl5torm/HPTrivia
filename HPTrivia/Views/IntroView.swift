@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct IntroView: View {
+    @State private var audioPlayer: AVAudioPlayer!
     @State private var animateViewsIn = false
     
     var body: some View {
@@ -28,18 +30,21 @@ struct IntroView: View {
                     Group {
                         if animateViewsIn {
                             VStack {
-                                Image(systemName: "bolt.fill")
-                                    .imageScale(.large)
-                                    .font(.largeTitle)
+//                                Image(systemName: "bolt.fill")
+//                                    .imageScale(.large)
+//                                    .font(.largeTitle)
                                 
                                 Text("HarryPotter")
                                     .font(.custom("PartyLetPlain", size: 72))
-                                    .padding(.bottom, -50)
+//                                    .padding(.bottom, -50)
                                     .shadow(color: .white, radius: 10)
                                 
                                 Text("Trivia")
                                     .font(.custom("PartyLetPlain", size: 60))
                                     .shadow(color: .white, radius: 10)
+                                
+                                Text("⚡️")
+                                    .font(.system(size: 140))
                             }
                             .padding(.top, 70)
                             .transition(.move(edge: .top))
@@ -56,7 +61,16 @@ struct IntroView: View {
         .ignoresSafeArea()
         .onAppear {
             animateViewsIn = true
+            playAudio()
         }
+    }
+    
+    private func playAudio() {
+        let sound = Bundle.main.path(forResource: "magic-in-the-air", ofType: "mp3")
+        audioPlayer = try! AVAudioPlayer(contentsOf: URL(filePath: sound!))
+//        audioPlayer.numberOfLoops = -1
+        audioPlayer.prepareToPlay()
+        audioPlayer.play()
     }
 }
 
