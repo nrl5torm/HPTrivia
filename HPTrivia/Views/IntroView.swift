@@ -11,6 +11,7 @@ import AVKit
 struct IntroView: View {
     @State private var audioPlayer: AVAudioPlayer!
     @State private var animateViewsIn = false
+    @State private var scalePlayButton = false
     
     var body: some View {
         GeometryReader { geo in
@@ -51,6 +52,29 @@ struct IntroView: View {
                         }
                         
                         Spacer()
+                        
+                        Group {
+                            if animateViewsIn {
+                                Button("Play     ") {
+                                    audioPlayer.stop()
+                                    //TODO
+                                }
+                                .font(.largeTitle)
+                                .buttonStyle(.glass)
+                                .shadow(radius: 5)
+                                .scaleEffect(scalePlayButton ? 1.2 : 1)
+                                .onAppear {
+                                    withAnimation(
+                                        .easeInOut(duration: 1.5)
+                                        .repeatForever()) {
+                                            scalePlayButton = true
+                                        }
+                                }
+                                .transition(.offset(y: geo.size.height / 2))
+                                 
+                                Spacer()
+                            }
+                        }
                     }
                     .animation(.easeOut(duration: 0.7).delay(2), value: animateViewsIn)
                 }
