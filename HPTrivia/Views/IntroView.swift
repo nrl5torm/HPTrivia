@@ -9,9 +9,11 @@ import SwiftUI
 import AVKit
 
 struct IntroView: View {
-    @State private var audioPlayer: AVAudioPlayer!
+    @State private var audioPlayer: AVAudioPlayer?
     @State private var animateViewsIn = false
     @State private var scalePlayButton = false
+    @State private var showInstructions = false
+    @State private var showSettings = false
     
     var body: some View {
         GeometryReader { geo in
@@ -31,50 +33,92 @@ struct IntroView: View {
                     Group {
                         if animateViewsIn {
                             VStack {
-//                                Image(systemName: "bolt.fill")
-//                                    .imageScale(.large)
-//                                    .font(.largeTitle)
-                                
-                                Text("HarryPotter")
-                                    .font(.custom("PartyLetPlain", size: 72))
-//                                    .padding(.bottom, -50)
-                                    .shadow(color: .white, radius: 10)
-                                
-                                Text("Trivia")
-                                    .font(.custom("PartyLetPlain", size: 60))
-                                    .shadow(color: .white, radius: 10)
+                                Group {
+                                    Text("HarryPotter")
+                                        .font(.custom("PartyLetPlain", size: 72))
+                                        .shadow(color: .white, radius: 2)
+                                        .shadow(color: .white, radius: 5)
+                                    
+                                    Text("Trivia")
+                                        .font(.custom("PartyLetPlain", size: 60))
+                                        .shadow(color: .white, radius: 2)
+                                        .shadow(color: .white, radius: 5)
+                                }
                                 
                                 Text("⚡️")
                                     .font(.system(size: 140))
+                                    .shadow(radius: 5)
                             }
                             .padding(.top, 70)
                             .transition(.move(edge: .top))
                         }
                         
                         Spacer()
+                        Spacer()
                         
-                        Group {
-                            if animateViewsIn {
-                                Button("Play     ") {
-                                    audioPlayer.stop()
-                                    //TODO
+                        HStack {
+                            Spacer()
+                            
+                            Group{
+                                if animateViewsIn {
+                                    Button {
+                                        showInstructions.toggle()
+                                    } label: {
+                                        Image(systemName: "info.circle.fill")
+                                            .font(.largeTitle)
+                                            .foregroundStyle(.white)
+                                            .shadow(radius: 5)
+                                    }
                                 }
-                                .font(.largeTitle)
-                                .buttonStyle(.glass)
-                                .shadow(radius: 5)
-                                .scaleEffect(scalePlayButton ? 1.2 : 1)
-                                .onAppear {
-                                    withAnimation(
-                                        .easeInOut(duration: 1.5)
-                                        .repeatForever()) {
-                                            scalePlayButton = true
-                                        }
-                                }
-                                .transition(.offset(y: geo.size.height / 2))
-                                 
-                                Spacer()
                             }
+                            .transition(.offset(x: -geo.size.height / 4))
+                            
+                            Spacer()
+                            
+                            Group {
+                                if animateViewsIn {
+                                    Button("Play     ") {
+                                        //TODO
+                                        if let ap = audioPlayer {
+                                            ap.stop()
+                                        }
+                                    }
+                                    .font(.largeTitle)
+                                    .buttonStyle(.glass)
+                                    .shadow(radius: 5)
+                                    .scaleEffect(scalePlayButton ? 1.2 : 1)
+                                    .onAppear {
+                                        withAnimation(
+                                            .easeInOut(duration: 1.5)
+                                            .repeatForever()) {
+                                                scalePlayButton = true
+                                            }
+                                    }
+                                }
+                            }
+                            .transition(.offset(y: geo.size.height / 2))
+                            
+                            Spacer()
+                            
+                            Group {
+                                if animateViewsIn {
+                                    Button {
+                                        showSettings.toggle()
+                                    } label: {
+                                        Image(systemName: "gearshape.fill")
+                                            .font(.largeTitle)
+                                            .foregroundStyle(.white)
+                                            .shadow(radius: 5)
+                                    }
+                                }
+                            }
+                            .transition(.offset(x: geo.size.height / 4))
+                            
+                            Spacer()
                         }
+                        .frame(width: geo.size.width)
+                        
+                        Spacer()
                     }
                     .animation(.easeOut(duration: 0.7).delay(2), value: animateViewsIn)
                 }
@@ -85,16 +129,19 @@ struct IntroView: View {
         .ignoresSafeArea()
         .onAppear {
             animateViewsIn = true
-            playAudio()
+//            playAudio()
+        }
+        .sheet(isPresented: $showInstructions) {
+            InstructionsView()
         }
     }
     
     private func playAudio() {
         let sound = Bundle.main.path(forResource: "magic-in-the-air", ofType: "mp3")
-        audioPlayer = try! AVAudioPlayer(contentsOf: URL(filePath: sound!))
-//        audioPlayer.numberOfLoops = -1
-        audioPlayer.prepareToPlay()
-        audioPlayer.play()
+        let ap = try! AVAudioPlayer(contentsOf: URL(filePath: sound!))
+        ap.prepareToPlay()
+        ap.play()
+        audioPlayer = ap
     }
 }
 
