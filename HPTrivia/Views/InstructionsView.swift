@@ -28,7 +28,7 @@ struct InstructionsView: View {
                 
                 ScrollView {
                     Text("How To Play")
-                        .font(.largeTitle)
+                        .font(.custom("PartyLetPlain", size: 72))
                         .padding()
                     
                     VStack(alignment: .leading, spacing: 20) {
@@ -41,16 +41,19 @@ struct InstructionsView: View {
                     .padding(.horizontal)
                     
                     Text("Good Luck!")
-                        .font(.title)
+                        .font(.custom("PartyLetPlain", size: 60))
                         .padding(.top, 2)
                 }
                 .foregroundStyle(.black)
                 
-                Button("Done") {
+                Button {
                     dismiss()
+                } label: {
+                    Text("Done")
+                        .font(.custom("PartyLetPlain", size: 45))
+                        .padding(.top, 10)
+                        .padding(.horizontal)
                 }
-                .font(.title)
-                .padding()
                 .buttonStyle(.glass)
             }
         }

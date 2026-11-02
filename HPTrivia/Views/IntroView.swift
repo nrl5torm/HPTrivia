@@ -46,7 +46,7 @@ struct IntroView: View {
                                 }
                                 
                                 Text("⚡️")
-                                    .font(.system(size: 140))
+                                    .font(.system(size: 100))
                                     .shadow(radius: 5)
                             }
                             .padding(.top, 70)
@@ -54,6 +54,37 @@ struct IntroView: View {
                         }
                         
                         Spacer()
+                        
+                        VStack {
+                            if animateViewsIn {
+                                VStack {
+                                    Text("Last Scores")
+                                        .font(.title2)
+                                        .bold()
+                                    
+                                    HStack {
+                                        Text("Oliv")
+                                        Text("33")
+                                    }
+                                    HStack {
+                                        Text("M")
+                                        Text("27")
+                                    }
+                                    HStack {
+                                        Text("Olv")
+                                        Text("11")
+                                    }
+                                }
+                                .font(.title3)
+                                .padding(.vertical)
+                                .padding(.horizontal, 25)
+                                .glassEffect(in: .rect(cornerRadius: 20))
+                                .shadow(radius: 5)
+                                .transition(.opacity)
+                            }
+                        }
+                        .animation(.linear(duration: 3).delay(2), value: animateViewsIn)
+                        
                         Spacer()
                         
                         HStack {
@@ -77,14 +108,19 @@ struct IntroView: View {
                             
                             Group {
                                 if animateViewsIn {
-                                    Button("Play     ") {
+                                    Button {
                                         //TODO
                                         if let ap = audioPlayer {
                                             ap.stop()
                                         }
+                                    } label: {
+                                        Text("Play")
+                                            .font(.custom("PartyLetPlain", size: 50))
+                                            .padding(.top)
+                                            .padding(.horizontal)
                                     }
-                                    .font(.largeTitle)
-                                    .buttonStyle(.glass)
+                                    
+                                    .buttonStyle(.glassProminent)
                                     .shadow(radius: 5)
                                     .scaleEffect(scalePlayButton ? 1.2 : 1)
                                     .onAppear {
@@ -129,7 +165,7 @@ struct IntroView: View {
         .ignoresSafeArea()
         .onAppear {
             animateViewsIn = true
-//            playAudio()
+            playAudio()
         }
         .sheet(isPresented: $showInstructions) {
             InstructionsView()
