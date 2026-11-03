@@ -10,7 +10,7 @@ struct Question: Decodable {
 
     let question: String
     let answer: String
-    let wrongAnswers: [String]
+    let wrong: [String]
 
     let book: Int
     let hint: String

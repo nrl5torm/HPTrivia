@@ -1,5 +1,5 @@
 //
-//  LastScoresView.swift
+//  LatestScoresView.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 03/11/2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LastScoresView: View {
+struct LatestScoresView: View {
     @Binding var animateViewsIn: Bool
     
     var body: some View {
@@ -15,7 +15,7 @@ struct LastScoresView: View {
         VStack {
             if animateViewsIn {
                 VStack {
-                    Text("Last Scores")
+                    Text("Latest Scores")
                         .font(.title2)
                         .bold()
                         .padding(.bottom, 2)
@@ -36,5 +36,5 @@ struct LastScoresView: View {
 }
 
 #Preview {
-    LastScoresView(animateViewsIn: .constant(true))
+    LatestScoresView(animateViewsIn: .constant(true))
 }

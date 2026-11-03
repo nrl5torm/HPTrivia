@@ -25,7 +25,7 @@ struct IntroView: View {
                         
                         Spacer()
                         
-                        LastScoresView(animateViewsIn: $animateViewsIn)
+                        LatestScoresView(animateViewsIn: $animateViewsIn)
                         
                         Spacer()
                         
@@ -40,7 +40,7 @@ struct IntroView: View {
         }
         .ignoresSafeArea()
         .task {
-//            await startAudio()
+            await startAudio()
             await startAnimation(delayedBySeconds: 1.5)
         }
         
