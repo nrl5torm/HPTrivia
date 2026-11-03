@@ -49,6 +49,7 @@ struct IntroView: View {
                                     .font(.system(size: 100))
                                     .shadow(radius: 5)
                             }
+                            .padding()
                             .padding(.top, 70)
                             .transition(.move(edge: .top))
                         }
@@ -62,18 +63,9 @@ struct IntroView: View {
                                         .font(.title2)
                                         .bold()
                                     
-                                    HStack {
-                                        Text("Oliv")
-                                        Text("33")
-                                    }
-                                    HStack {
-                                        Text("M")
-                                        Text("27")
-                                    }
-                                    HStack {
-                                        Text("Olv")
-                                        Text("11")
-                                    }
+                                    Text("Oliv 33")
+                                    Text("M 27")
+                                    Text("Olv 11")
                                 }
                                 .font(.title3)
                                 .padding(.vertical)
@@ -110,13 +102,13 @@ struct IntroView: View {
                                 if animateViewsIn {
                                     Button {
                                         //TODO
-                                        if let ap = audioPlayer {
-                                            ap.stop()
-                                        }
+                                        audioPlayer?.stop()
+                                        
                                     } label: {
                                         Text("Play")
                                             .font(.custom("PartyLetPlain", size: 50))
-                                            .padding(.top)
+                                            .padding(.top, 5)
+                                            .padding(.bottom, -10)
                                             .padding(.horizontal)
                                     }
                                     
@@ -165,19 +157,32 @@ struct IntroView: View {
         .ignoresSafeArea()
         .onAppear {
             animateViewsIn = true
-            playAudio()
+        }
+        .task {
+            await startAudio()
         }
         .sheet(isPresented: $showInstructions) {
             InstructionsView()
         }
     }
     
-    private func playAudio() {
-        let sound = Bundle.main.path(forResource: "magic-in-the-air", ofType: "mp3")
-        let ap = try! AVAudioPlayer(contentsOf: URL(filePath: sound!))
-        ap.prepareToPlay()
-        ap.play()
-        audioPlayer = ap
+    private func startAudio() async {
+        let file = "magic-in-the-air"
+        guard let sound = Bundle.main.path(forResource: file, ofType: "mp3") else {
+            print("missing file \(file)")
+            return
+        }
+        
+        do {
+            let ap = try AVAudioPlayer(contentsOf: URL(filePath: sound))
+            Task {
+                ap.prepareToPlay()
+                ap.play()
+                audioPlayer = ap
+            }
+        } catch {
+            print(error)
+        }
     }
 }
 
