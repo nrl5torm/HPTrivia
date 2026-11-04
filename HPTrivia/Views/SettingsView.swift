@@ -11,6 +11,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(Game.self) private var game
     
+    @State private var showTmpAlert = false
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Image(.parchment)
@@ -21,18 +23,17 @@ struct SettingsView: View {
                 .frame(width: 0)
             
             VStack {
-                Text("Settings")
-                    .font(.custom("PartyLetPlain", size: 72))
-                    .padding(10)
-                
                 Text("Which books would you like to see questions from?")
                     .font(.title2)
                     .multilineTextAlignment(.center)
+                    .padding(.top, 30)
                 
                 ScrollView {
                     LazyVGrid(columns: [GridItem(), GridItem()]) {
                         ForEach(game.questions.books) { book in
-                            if book.status == .active {
+                            
+                            switch book.status {
+                            case .active:
                                 ZStack(alignment: .bottomTrailing) {
                                     Image(book.image)
                                         .resizable()
@@ -46,21 +47,51 @@ struct SettingsView: View {
                                         .shadow(radius: 3)
                                         .padding(3)
                                 }
-                            } else if book.status == .inactive {
-                                ZStack {
-                                    Image(book.image)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .shadow(radius: 7)
-                                    
+                                .onTapGesture {
+                                    game.questions.updateStatusOfBook(id: book.id, to: .inactive)
                                 }
-                            } else {
+                                
+                            case .inactive:
+                                ZStack(alignment: .bottomTrailing) {
+                                    Image(book.image)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .shadow(radius: 7)
+                                        .overlay {
+                                            Rectangle().opacity(0.4)
+                                        }
+                                    
+                                    Image(systemName: "circle")
+                                        .font(.largeTitle)
+                                        .imageScale(.large)
+                                        .foregroundStyle(.accent.opacity(0.8))
+                                        .shadow(radius: 3)
+                                        .padding(3)
+                                }
+                                .onTapGesture {
+                                    game.questions.updateStatusOfBook(id: book.id, to: .active)
+                                }
+                                
+                            case .locked:
                                 ZStack {
                                     Image(book.image)
                                         .resizable()
                                         .scaledToFit()
                                         .shadow(radius: 7)
+                                        .overlay {
+                                            Rectangle().opacity(0.8)
+                                        }
                                     
+                                    Image(systemName: "lock.fill")
+                                        .font(.largeTitle)
+                                        .imageScale(.large)
+                                        .foregroundStyle(.accent.opacity(0.8))
+                                        .shadow(color: .white, radius: 1)
+                                }
+                                .onTapGesture {
+                                    showTmpAlert.toggle()
+                                    
+                                    game.questions.updateStatusOfBook(id: book.id, to: .active)
                                 }
                             }
                         }
@@ -81,6 +112,7 @@ struct SettingsView: View {
             }
             .buttonStyle(.glass)
         }
+        .alert("Thank you for purchasing this new question pack!", isPresented: $showTmpAlert) {}
     }
 }
 

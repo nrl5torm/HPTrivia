@@ -58,6 +58,10 @@ class Questions {
         }
     }
     
+    public func updateStatusOfBook(id: Int, to status: Book.Status) {
+        books[id - 1].status = status
+    }
+    
     enum DecodingError: Error {
         case missingFile(name: String)
         case other
