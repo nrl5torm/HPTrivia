@@ -29,10 +29,8 @@ class DecodedQuestions {
             let data = try Data(contentsOf: url)
             decodedQuestions = try JSONDecoder().decode([Question].self, from: data)
             
-        } catch DecodingError.missingFile(let file) {
-            print("Cannot decode missing file: \(file).")
         } catch {
-            print("Error decoding \(file) JSON data: \(error).")
+            print(error.localizedDescription)
         }
         
         return decodedQuestions
@@ -58,8 +56,14 @@ class DecodedQuestions {
         }
     }
     
-    enum DecodingError: Error {
+    enum DecodingError: LocalizedError {
         case missingFile(name: String)
-        case other
+        
+        public var errorDescription: String? {
+            switch self {
+            case .missingFile(let file):
+                "Cannot decode missing file: \(file)."
+            }
+        }
     }
 }

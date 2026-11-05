@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
-import AVKit
+import AVFAudio
 
 struct GameTitleView: View {
-    @State private var audioPlayer: AVAudioPlayer?
+    @State private var musicPlayer: AVAudioPlayer?
     @State private var animateViewsIn = false
     @State private var playingGame = false
     
@@ -41,31 +41,33 @@ struct GameTitleView: View {
         }
         .ignoresSafeArea()
         .task {
-            await startAudio()
+            await startMusic()
             await startAnimation(delayedBySeconds: 1.5)
         }
         .fullScreenCover(isPresented: $playingGame) {
             GamePlayView()
-                .onAppear() {
-                    audioPlayer?.setVolume(0, fadeDuration: 2)
+                .onAppear {
+                    Task { await stopMusic() }
                 }
-                .onDisappear() {
-                    audioPlayer?.setVolume(100, fadeDuration: 2)
+                .onDisappear {
+                    Task { await startMusic() }
                 }
         }
     }
     
     private func startAnimation(delayedBySeconds delay: Double) async {
-        do {
-            try await Task.sleep(for: .seconds(delay))
-        } catch {
-            print(error.localizedDescription)
-        }
+        try? await Task.sleep(for: .seconds(delay))
         
         animateViewsIn = true
     }
     
-    private func startAudio() async {
+    private func stopMusic() async {
+        musicPlayer?.setVolume(0, fadeDuration: 2)
+        try? await Task.sleep(for: .seconds(3))
+        musicPlayer?.stop()
+    }
+    
+    private func startMusic() async {
         let soundFile = "magic-in-the-air"
         
         guard let sound = Bundle.main.path(forResource: soundFile, ofType: "mp3") else {
@@ -73,12 +75,15 @@ struct GameTitleView: View {
             return
         }
         
+        var player: AVAudioPlayer
         do {
-            let ap = try AVAudioPlayer(contentsOf: URL(filePath: sound))
-            Task {
-                ap.prepareToPlay()
-                ap.play()
-                audioPlayer = ap
+            player = try AVAudioPlayer(contentsOf: URL(filePath: sound))
+            musicPlayer = player
+            
+            Task.detached(priority: .background) {
+                player.volume = 0.5
+                player.prepareToPlay()
+                player.play()
             }
         } catch {
             print(error)

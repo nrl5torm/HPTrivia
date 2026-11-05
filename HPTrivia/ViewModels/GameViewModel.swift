@@ -35,7 +35,7 @@ class GameViewModel {
         }.joined())
         
         guard activeQuestions.count > 0 else {
-            throw GameError.NoQuestionsFound
+            throw GameError.noQuestionsFound
         }
         
         setNewQuestion()
@@ -87,6 +87,13 @@ public struct Score {
     let points: Int
 }
 
-public enum GameError: Int, Error {
-    case NoQuestionsFound = 1
+public enum GameError: Int, LocalizedError {
+    case noQuestionsFound = 1
+    
+    public var errorDescription: String? {
+        switch self {
+        case .noQuestionsFound:
+            "No questions found! Please update or reinstall app."
+        }
+    }
 }
