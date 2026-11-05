@@ -1,5 +1,5 @@
 //
-//  IntroView.swift
+//  GameTitleView.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 29/10/2026.
@@ -8,9 +8,10 @@
 import SwiftUI
 import AVKit
 
-struct IntroView: View {
+struct GameTitleView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var animateViewsIn = false
+    @State private var playingGame = false
     
     var body: some View {
         GeometryReader { geo in
@@ -21,7 +22,7 @@ struct IntroView: View {
                     Group {
                         Spacer()
                         
-                        GameTitleView(animateViewsIn: $animateViewsIn)
+                        TitleView(animateViewsIn: $animateViewsIn)
                         
                         Spacer()
                         
@@ -29,7 +30,7 @@ struct IntroView: View {
                         
                         Spacer()
                         
-                        ButtonBarView(animateViewsIn: $animateViewsIn, geo: geo)
+                        ButtonBarView(animateViewsIn: $animateViewsIn, playingGame: $playingGame, geo: geo)
                         
                         Spacer()
                     }
@@ -43,7 +44,15 @@ struct IntroView: View {
             await startAudio()
             await startAnimation(delayedBySeconds: 1.5)
         }
-        
+        .fullScreenCover(isPresented: $playingGame) {
+            GamePlayView()
+                .onAppear() {
+                    audioPlayer?.setVolume(0, fadeDuration: 2)
+                }
+                .onDisappear() {
+                    audioPlayer?.setVolume(100, fadeDuration: 2)
+                }
+        }
     }
     
     private func startAnimation(delayedBySeconds delay: Double) async {
@@ -78,6 +87,6 @@ struct IntroView: View {
 }
 
 #Preview {
-    IntroView()
+    GameTitleView()
         .environment(GameViewModel())
 }

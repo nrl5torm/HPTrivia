@@ -13,7 +13,7 @@ struct HPTriviaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            IntroView()
+            GameTitleView()
                 .environment(game)
         }
     }

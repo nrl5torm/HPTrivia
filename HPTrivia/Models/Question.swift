@@ -14,4 +14,8 @@ struct Question: Decodable {
 
     let book: Int
     let hint: String
+    
+    static public var none: Question {
+        Question(id: 0, question: "", answer: "", wrong: [], book: 0, hint: "")
+    }
 }

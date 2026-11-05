@@ -1,5 +1,5 @@
 //
-//  GameTitleView.swift
+//  TitleView.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 03/11/2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GameTitleView: View {
+struct TitleView: View {
     @Binding var animateViewsIn: Bool
     
     var body: some View {
@@ -38,5 +38,5 @@ struct GameTitleView: View {
 }
 
 #Preview {
-    GameTitleView(animateViewsIn: .constant(true))
+    TitleView(animateViewsIn: .constant(true))
 }

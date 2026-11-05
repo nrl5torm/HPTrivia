@@ -8,19 +8,18 @@
 import SwiftUI
 
 struct PlayButtonView: View {
-    @State private var showGame = false
     @State private var scalePlayButton = false
     
     @Binding var animateViewsIn: Bool
+    @Binding var playingGame: Bool
+
     let geo: GeometryProxy
     
     var body: some View {
         Group {
             if animateViewsIn {
                 Button {
-                    showGame.toggle()
-                    //TODO
-                    //audioPlayer?.stop()
+                    playingGame.toggle()
                 } label: {
                     Text("Play")
                         .font(.custom("PartyLetPlain", size: 50))
@@ -46,6 +45,6 @@ struct PlayButtonView: View {
 
 #Preview {
     GeometryReader { geo in
-        PlayButtonView(animateViewsIn: .constant(true), geo: geo)
+        PlayButtonView(animateViewsIn: .constant(true), playingGame: .constant(false), geo: geo)
     }
 }
