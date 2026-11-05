@@ -79,5 +79,5 @@ struct IntroView: View {
 
 #Preview {
     IntroView()
-        .environment(Game())
+        .environment(GameViewModel())
 }

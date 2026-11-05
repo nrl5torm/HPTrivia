@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct HPTriviaApp: App {
-    private var game = Game()
+    private var game = GameViewModel()
     
     var body: some Scene {
         WindowGroup {

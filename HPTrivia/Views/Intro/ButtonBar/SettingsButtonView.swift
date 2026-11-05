@@ -37,6 +37,6 @@ struct SettingsButtonView: View {
 #Preview {
     GeometryReader { geo in
         SettingsButtonView(animateViewsIn: .constant(true), geo: geo)
-            .environment(Game())
+            .environment(GameViewModel())
     }
 }

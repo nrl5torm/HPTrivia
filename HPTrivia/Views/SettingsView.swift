@@ -9,9 +9,15 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(Game.self) private var game
+    @Environment(GameViewModel.self) private var game
     
     @State private var showTmpAlert = false
+    
+    private var anyActiveBook: Bool {
+        game.books.contains { book in
+            book.status == .active
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -27,71 +33,36 @@ struct SettingsView: View {
                     .font(.title2)
                     .multilineTextAlignment(.center)
                     .padding(.top, 30)
+                    .padding(.bottom, 5)
+                
+                Text("You must select at least one book.")
+                    .multilineTextAlignment(.center)
+                    .bold()
+                    .opacity(anyActiveBook ? 0 : 1)
                 
                 ScrollView {
                     LazyVGrid(columns: [GridItem(), GridItem()]) {
-                        ForEach(game.questions.books) { book in
-                            
+                        ForEach(game.books) { book in
                             switch book.status {
+                                
                             case .active:
-                                ZStack(alignment: .bottomTrailing) {
-                                    Image(book.image)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .shadow(radius: 7)
-                                    
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.largeTitle)
-                                        .imageScale(.large)
-                                        .foregroundStyle(.accent)
-                                        .shadow(radius: 3)
-                                        .padding(3)
-                                }
+                                ActiveBookView(book: book)
                                 .onTapGesture {
-                                    game.questions.updateStatusOfBook(id: book.id, to: .inactive)
+                                    game.changeStatusOf(book: book.id, to: .inactive)
                                 }
                                 
                             case .inactive:
-                                ZStack(alignment: .bottomTrailing) {
-                                    Image(book.image)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .shadow(radius: 7)
-                                        .overlay {
-                                            Rectangle().opacity(0.4)
-                                        }
-                                    
-                                    Image(systemName: "circle")
-                                        .font(.largeTitle)
-                                        .imageScale(.large)
-                                        .foregroundStyle(.accent.opacity(0.8))
-                                        .shadow(radius: 3)
-                                        .padding(3)
-                                }
+                                InactiveBookView(book: book)
                                 .onTapGesture {
-                                    game.questions.updateStatusOfBook(id: book.id, to: .active)
+                                    game.changeStatusOf(book: book.id, to: .active)
                                 }
                                 
                             case .locked:
-                                ZStack {
-                                    Image(book.image)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .shadow(radius: 7)
-                                        .overlay {
-                                            Rectangle().opacity(0.8)
-                                        }
-                                    
-                                    Image(systemName: "lock.fill")
-                                        .font(.largeTitle)
-                                        .imageScale(.large)
-                                        .foregroundStyle(.accent.opacity(0.8))
-                                        .shadow(color: .white, radius: 1)
-                                }
+                                LockedBookView(book: book)
                                 .onTapGesture {
                                     showTmpAlert.toggle()
                                     
-                                    game.questions.updateStatusOfBook(id: book.id, to: .active)
+                                    game.changeStatusOf(book: book.id, to: .active)
                                 }
                             }
                         }
@@ -111,12 +82,14 @@ struct SettingsView: View {
                     .padding(.horizontal)
             }
             .buttonStyle(.glass)
+            .disabled(!anyActiveBook)
         }
+        .interactiveDismissDisabled(!anyActiveBook)
         .alert("Thank you for purchasing this new question pack!", isPresented: $showTmpAlert) {}
     }
 }
 
 #Preview {
     SettingsView()
-        .environment(Game())
+        .environment(GameViewModel())
 }

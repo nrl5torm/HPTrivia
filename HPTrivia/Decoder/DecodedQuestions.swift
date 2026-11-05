@@ -1,5 +1,5 @@
 //
-//  Questions.swift
+//  DecodedQuestions.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 03/11/2026.
@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-class Questions {
+class DecodedQuestions {
     var books: [Book] = []
     
     init() {
@@ -56,10 +56,6 @@ class Questions {
                      questions: questions[i - 1],
                      status: i <= 2 ? .active : (i <= 3 ? .inactive : .locked)))
         }
-    }
-    
-    public func updateStatusOfBook(id: Int, to status: Book.Status) {
-        books[id - 1].status = status
     }
     
     enum DecodingError: Error {
