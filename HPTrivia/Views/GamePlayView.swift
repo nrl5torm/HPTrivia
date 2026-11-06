@@ -16,7 +16,11 @@ struct GamePlayView: View {
     @State private var sfxPlayer: AVAudioPlayer!
     
     @State private var showError = false
-    @State private var error: LocalizedError?
+    @State private var error: Error?
+    
+    @State private var animateViewsIn = false
+    
+    private let mp3 = "mp3"
     
     var body: some View {
         GeometryReader { geo in
@@ -28,14 +32,45 @@ struct GamePlayView: View {
                 
                 VStack {
                     // MARK: Controls
+                    HStack {
+                        Text("\(game.userName)'s Score:")
+                            .font(.title3)
+                        
+                        Text("\(game.currentScore)")
+                            .font(.title3)
+                            .bold()
+                        
+                        Spacer()
+                        
+                        Button("╳ End Game") {
+                            game.endGame()
+                            dismiss()
+                        }
+                        .bold()
+                        .buttonStyle(.glassProminent)
+                    }
+                    .padding(.top, 30)
+                    .padding()
                     
                     // MARK: Question
+                    VStack {
+                        if animateViewsIn {
+                            Text(game.currentQuestion.question)
+                                .font(.custom("PartyLetPlain", size: 50))
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .transition(.scale)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 2), value: animateViewsIn)
+                    
+                    Spacer()
                     
                     // MARK: Hints
                     
                     // MARK: Answers
                 }
-                //.frame(width: geo.size.width, height: geo.size.height)
+                .frame(width: geo.size.width, height: geo.size.height)
                 
                 // MARK: Celebration
             }
@@ -47,29 +82,36 @@ struct GamePlayView: View {
             do {
                 try game.startGame()
             } catch {
-                self.error = error as? LocalizedError
+                self.error = error 
                 showError = self.error != nil
             }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                animateViewsIn = true
+            }
+        }
+        .onDisappear() {
+            musicPlayer.setVolume(0, fadeDuration: 1)
         }
         .task {
-            await startMusic(after: 3)
+            await playMusic(after: .seconds(3))
         }
-        .alert("Error detected", isPresented: $showError, presenting: error, actions: { _ in
+        .alert("Error detected 🌩️", isPresented: $showError, presenting: error, actions: { _ in
             Button("OK") { dismiss() }
         }, message: { error in
             Text("\(error.localizedDescription)")
         })
     }
     
-    private func startMusic(after seconds: Int = 0) async {
+    private func playMusic(after delay: Duration) async {
         let musicFiles = ["let-the-mystery-unfold",
                          "spellcraft",
                          "hiding-place-in-the-forest",
                          "deep-in-the-dell"]
         let musicFile = musicFiles.randomElement()!
         
-        guard let music = Bundle.main.path(forResource: musicFile, ofType: "mp3") else {
-            print("ERROR: missing sound file \(musicFile)")
+        guard let music = Bundle.main.path(forResource: musicFile, ofType: mp3) else {
+            print("ERROR: missing sound file \(musicFile).\(mp3)")
             return
         }
         
@@ -77,12 +119,14 @@ struct GamePlayView: View {
             let player = try AVAudioPlayer(contentsOf: URL(filePath: music))
             musicPlayer = player
             
+            player.numberOfLoops = -1
+            player.volume = 0.1
+            
             Task.detached(priority: .background) {
-                player.numberOfLoops = -1
-                player.volume = 0.1
                 player.prepareToPlay()
                 
-                try? await Task.sleep(for: .seconds(seconds))
+                do { try await Task.sleep(for: delay) }
+                catch { return }
                 
                 player.play()
             }
@@ -104,8 +148,8 @@ struct GamePlayView: View {
     }
     
     private func playSFX(soundFile: String) async {
-        guard let sound = Bundle.main.path(forResource: soundFile, ofType: "mp3") else {
-            print("ERROR: missing sound file \(soundFile)")
+        guard let sound = Bundle.main.path(forResource: soundFile, ofType: mp3) else {
+            print("ERROR: missing sound file \(soundFile).\(mp3)")
             return
         }
         

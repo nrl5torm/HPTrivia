@@ -11,17 +11,19 @@ import SwiftUI
 class GameViewModel {
     public var userName = "Harry"
     
-    private(set) var gamePoints = 0
+    private(set) var currentScore = 0
     private(set) var currentQuestionPoints = 0
+    
     private(set) var latestScores = [
-        Score(name: "Hermione", points: 20),
-        Score(name: "Ron", points: 11),
-        Score(name: "Harry", points: 15)
+        Score(id: 5, name: "Hermione", points: 112),
+        Score(id: 6, name: "Ron", points: 50),
+        Score(id: 7, name: "Harry", points: 77)
     ]
     
     private(set) var books = DecodedQuestions().books
     private(set) var activeQuestions: [Question] = []
     private(set) var doneQuestionIds: [Int] = []
+    
     private(set) var currentQuestion = Question.none
     private(set) var answers: [String] = []
     
@@ -60,20 +62,20 @@ class GameViewModel {
     public func answer(correctly: Bool) {
         if correctly {
             doneQuestionIds.append(currentQuestion.id)
-            gamePoints += currentQuestionPoints
+            currentScore += currentQuestionPoints
             
             setNewQuestion()
         } else {
-            gamePoints -= 1
+            currentScore -= 1
         }
     }
     
     public func endGame() {
         latestScores[2] = latestScores[1]
         latestScores[1] = latestScores[0]
-        latestScores[0] = Score(name: userName, points: gamePoints)
+        latestScores[0] = Score(id: latestScores[0].id - 1, name: userName, points: currentScore)
         
-        gamePoints = 0
+        currentScore = 0
         activeQuestions = []
     }
     
@@ -82,18 +84,13 @@ class GameViewModel {
     }
 }
 
-public struct Score {
-    let name: String
-    let points: Int
-}
-
 public enum GameError: Int, LocalizedError {
     case noQuestionsFound = 1
     
     public var errorDescription: String? {
         switch self {
         case .noQuestionsFound:
-            "No questions found! Please update or reinstall app."
+            "No questions found. Please update, or uninstall then reinstall the app to recover the missing data.\nSorry :("
         }
     }
 }

@@ -42,29 +42,36 @@ struct GameTitleView: View {
         .ignoresSafeArea()
         .task {
             await startMusic()
-            await startAnimation(delayedBySeconds: 1.5)
+            await startAnimation(after: .seconds(1.5))
         }
         .fullScreenCover(isPresented: $playingGame) {
             GamePlayView()
                 .onAppear {
-                    Task { await stopMusic() }
+                    Task { await pauseMusic(after: .seconds(1)) }
                 }
                 .onDisappear {
-                    Task { await startMusic() }
+                    Task { await resumeMusic() }
                 }
         }
     }
     
-    private func startAnimation(delayedBySeconds delay: Double) async {
-        try? await Task.sleep(for: .seconds(delay))
+    private func startAnimation(after delay: Duration) async {
+        do { try await Task.sleep(for: delay) }
+        catch { return }
         
         animateViewsIn = true
     }
     
-    private func stopMusic() async {
-        musicPlayer?.setVolume(0, fadeDuration: 2)
-        try? await Task.sleep(for: .seconds(3))
-        musicPlayer?.stop()
+    private func pauseMusic(after delay: Duration) async {
+        musicPlayer?.setVolume(0, fadeDuration: TimeInterval(delay.components.seconds))
+    }
+    
+    private func resumeMusic() async {
+        let player = musicPlayer
+        Task.detached(priority: .background) {
+            player?.play()
+            player?.setVolume(0.5, fadeDuration: 2)
+        }
     }
     
     private func startMusic() async {
@@ -81,9 +88,11 @@ struct GameTitleView: View {
             musicPlayer = player
             
             Task.detached(priority: .background) {
-                player.volume = 0.5
+                player.volume = 0.1
                 player.prepareToPlay()
+                
                 player.play()
+                player.setVolume(0.5, fadeDuration: 5)
             }
         } catch {
             print(error)

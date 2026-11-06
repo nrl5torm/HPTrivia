@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct LatestScoresView: View {
+    @Environment(GameViewModel.self) private var game
+    
     @Binding var animateViewsIn: Bool
     
     var body: some View {
@@ -15,14 +17,14 @@ struct LatestScoresView: View {
         VStack {
             if animateViewsIn {
                 VStack {
-                    Text("Latest Scores")
+                    Text("Latest Scores:")
                         .font(.title2)
                         .bold()
                         .padding(.bottom, 2)
                     
-                    Text("Oscar 33").padding(.bottom, 2)
-                    Text("Mary 27").padding(.bottom, 2)
-                    Text("Henry 11").padding(.bottom, 2)
+                    ForEach(game.latestScores) { score in
+                        Text("\(score.name) \(score.points)").padding(.bottom, 2)
+                    }
                 }
                 .font(.title3)
                 .padding(25)
@@ -37,4 +39,5 @@ struct LatestScoresView: View {
 
 #Preview {
     LatestScoresView(animateViewsIn: .constant(true))
+        .environment(GameViewModel())
 }
