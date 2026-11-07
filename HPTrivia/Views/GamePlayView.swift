@@ -15,10 +15,11 @@ struct GamePlayView: View {
     @State private var musicPlayer: AVAudioPlayer!
     @State private var sfxPlayer: AVAudioPlayer!
     
-    @State private var showError = false
+    @State private var showErrorAlert = false
     @State private var error: Error?
     
     @State private var animateViewsIn = false
+    @State private var revealHint = false
     
     private let mp3 = "mp3"
     
@@ -42,12 +43,16 @@ struct GamePlayView: View {
                         
                         Spacer()
                         
-                        Button("╳ End Game") {
+                        Button {
                             game.endGame()
                             dismiss()
+                        } label : {
+                            Text("╳ End Game")
+                                .bold()
+                                .padding(.vertical, 5)
                         }
-                        .bold()
                         .buttonStyle(.glassProminent)
+                        .padding()
                     }
                     .padding(.top, 30)
                     .padding()
@@ -58,6 +63,7 @@ struct GamePlayView: View {
                             Text(game.currentQuestion.question)
                                 .font(.custom("PartyLetPlain", size: 50))
                                 .multilineTextAlignment(.center)
+                                .minimumScaleFactor(0.8)
                                 .padding()
                                 .transition(.scale)
                         }
@@ -67,8 +73,51 @@ struct GamePlayView: View {
                     Spacer()
                     
                     // MARK: Hints
+                    HStack {
+                        Group {
+                            
+                            if animateViewsIn {
+                                Image(systemName: "questionmark.app.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 100)
+                                    .foregroundStyle(.accent)
+                                    .padding()
+                                    .transition(.offset(x: -geo.size.width / 2))
+                                    .phaseAnimator([0, 5]) { content, phase in
+                                        content.rotationEffect(.degrees(-10 - phase))
+                                    } animation: { _ in
+                                            .easeInOut(duration: 0.7)
+                                    }
+                                    .onTapGesture {
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            revealHint = true
+                                        }
+                                        game.answer(correctly: false)
+                                        Task { await playHintSFX() }
+                                    }
+                                    .rotation3DEffect(.degrees(revealHint ? 720 : 0), axis: (x: 0, y: 1, z: 0))
+                                    .scaleEffect(revealHint ? 5 : 1)
+                                    .offset(x: revealHint ? geo.size.width : 0)
+                                    .opacity(revealHint ? 0 : 1)
+                                    .overlay {
+                                        Text(game.currentQuestion.hint)
+                                            .padding(.leading, 20)
+                                            .minimumScaleFactor(0.5)
+                                            .multilineTextAlignment(.center)
+                                            .opacity(revealHint ? 1 : 0)
+                                            .scaleEffect(revealHint ? 1.2 : 0.5 )
+                                    }
+                            }
+                        }
+                        .animation(.easeOut(duration: 0.5).delay(2), value: animateViewsIn)
+                        
+                        Spacer()
+                    }
+                    .padding()
                     
                     // MARK: Answers
+                    Spacer()
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
                 
@@ -83,7 +132,7 @@ struct GamePlayView: View {
                 try game.startGame()
             } catch {
                 self.error = error 
-                showError = self.error != nil
+                showErrorAlert = self.error != nil
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -96,7 +145,7 @@ struct GamePlayView: View {
         .task {
             await playMusic(after: .seconds(3))
         }
-        .alert("Error detected 🌩️", isPresented: $showError, presenting: error, actions: { _ in
+        .alert("Error detected 🌩️", isPresented: $showErrorAlert, presenting: error, actions: { _ in
             Button("OK") { dismiss() }
         }, message: { error in
             Text("\(error.localizedDescription)")

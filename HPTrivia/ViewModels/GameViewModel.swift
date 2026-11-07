@@ -66,7 +66,7 @@ class GameViewModel {
             
             setNewQuestion()
         } else {
-            currentScore -= 1
+            currentQuestionPoints -= 1
         }
     }
     
