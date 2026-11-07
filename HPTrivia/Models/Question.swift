@@ -13,6 +13,10 @@ struct Question: Decodable {
     let wrong: [String]
 
     let book: Int
+    public var bookName: String {
+        "hp\(String(book))"
+    }
+    
     let hint: String
     
     static public var none: Question {

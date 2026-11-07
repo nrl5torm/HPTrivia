@@ -19,7 +19,9 @@ struct GamePlayView: View {
     @State private var error: Error?
     
     @State private var animateViewsIn = false
+    
     @State private var revealHint = false
+    @State private var revealBook = false
     
     private let mp3 = "mp3"
     
@@ -75,7 +77,6 @@ struct GamePlayView: View {
                     // MARK: Hints
                     HStack {
                         Group {
-                            
                             if animateViewsIn {
                                 Image(systemName: "questionmark.app.fill")
                                     .resizable()
@@ -87,7 +88,7 @@ struct GamePlayView: View {
                                     .phaseAnimator([0, 5]) { content, phase in
                                         content.rotationEffect(.degrees(-10 - phase))
                                     } animation: { _ in
-                                            .easeInOut(duration: 0.7)
+                                        .easeInOut(duration: 0.7)
                                     }
                                     .onTapGesture {
                                         withAnimation(.easeOut(duration: 0.5)) {
@@ -102,20 +103,64 @@ struct GamePlayView: View {
                                     .opacity(revealHint ? 0 : 1)
                                     .overlay {
                                         Text(game.currentQuestion.hint)
-                                            .padding(.leading, 20)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(.secondary, lineWidth: 2)
+                                                    .shadow(radius: 2)
+                                                    .opacity(revealHint ? 1 : 0)
+                                                    .scaleEffect(revealHint ? 1.35 : 0.5)
+                                            )
+                                            .padding(.leading, 30)
                                             .minimumScaleFactor(0.5)
                                             .multilineTextAlignment(.center)
                                             .opacity(revealHint ? 1 : 0)
-                                            .scaleEffect(revealHint ? 1.2 : 0.5 )
+                                            .scaleEffect(revealHint ? 1.3 : 0.5)
                                     }
                             }
                         }
-                        .animation(.easeOut(duration: 0.5).delay(2), value: animateViewsIn)
                         
                         Spacer()
+                        
+                        Group {
+                            if animateViewsIn {
+                                Image(systemName: "apple.books.pages.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 100)
+                                    .foregroundStyle(.accent)
+                                    .padding()
+                                    .transition(.offset(x: geo.size.width / 2))
+                                    .phaseAnimator([0, 5]) { content, phase in
+                                        content.rotationEffect(.degrees(10 + phase))
+                                    } animation: { _ in
+                                        .easeInOut(duration: 0.7)
+                                    }
+                                    .onTapGesture {
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            revealBook = true
+                                        }
+                                        game.answer(correctly: false)
+                                        Task { await playHintSFX() }
+                                    }
+                                    .rotation3DEffect(.degrees(revealBook ? 720 : 0), axis: (x: 0, y: 1, z: 0))
+                                    .scaleEffect(revealBook ? 5 : 1)
+                                    .offset(x: revealBook ? -geo.size.width : 0)
+                                    .opacity(revealBook ? 0 : 1)
+                                    .overlay {
+                                        Image(game.currentQuestion.bookName)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .padding(.trailing, 30)
+                                            .opacity(revealBook ? 1 : 0)
+                                            .scaleEffect(revealBook ? 1.4 : 0.5)
+                                            .shadow(radius: 3)
+                                    }
+                            }
+                        }
                     }
                     .padding()
-                    
+                    .animation(.easeOut(duration: 0.5).delay(2), value: animateViewsIn)
+
                     // MARK: Answers
                     Spacer()
                 }
