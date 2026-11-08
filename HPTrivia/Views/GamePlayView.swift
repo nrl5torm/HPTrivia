@@ -22,6 +22,7 @@ struct GamePlayView: View {
     
     @State private var revealHint = false
     @State private var revealBook = false
+    @State private var tappedCorrectAnswer = false
     
     private let mp3 = "mp3"
     
@@ -32,11 +33,12 @@ struct GamePlayView: View {
                     .resizable()
                     .scaledToFill()
                     .opacity(0.2)
-                
+                    .padding(.top)
+
                 VStack {
                     // MARK: Controls
                     HStack {
-                        Text("\(game.userName)'s Score:")
+                        Text("Score:")
                             .font(.title3)
                         
                         Text("\(game.currentScore)")
@@ -49,15 +51,14 @@ struct GamePlayView: View {
                             game.endGame()
                             dismiss()
                         } label : {
-                            Text("╳ End Game")
+                            Text("╳ End ")
                                 .bold()
                                 .padding(.vertical, 5)
                         }
                         .buttonStyle(.glassProminent)
-                        .padding()
                     }
-                    .padding(.top, 30)
-                    .padding()
+                    .padding(.top, 60)
+                    .padding(.horizontal, 30)
                     
                     // MARK: Question
                     VStack {
@@ -65,7 +66,7 @@ struct GamePlayView: View {
                             Text(game.currentQuestion.question)
                                 .font(.custom("PartyLetPlain", size: 50))
                                 .multilineTextAlignment(.center)
-                                .minimumScaleFactor(0.8)
+                                .minimumScaleFactor(0.7)
                                 .padding()
                                 .transition(.scale)
                         }
@@ -91,10 +92,10 @@ struct GamePlayView: View {
                                         .easeInOut(duration: 0.7)
                                     }
                                     .onTapGesture {
+                                        game.revealedHint()
                                         withAnimation(.easeOut(duration: 0.5)) {
                                             revealHint = true
                                         }
-                                        game.answer(correctly: false)
                                         Task { await playHintSFX() }
                                     }
                                     .rotation3DEffect(.degrees(revealHint ? 720 : 0), axis: (x: 0, y: 1, z: 0))
@@ -103,13 +104,6 @@ struct GamePlayView: View {
                                     .opacity(revealHint ? 0 : 1)
                                     .overlay {
                                         Text(game.currentQuestion.hint)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(.secondary, lineWidth: 2)
-                                                    .shadow(radius: 2)
-                                                    .opacity(revealHint ? 1 : 0)
-                                                    .scaleEffect(revealHint ? 1.35 : 0.5)
-                                            )
                                             .padding(.leading, 30)
                                             .minimumScaleFactor(0.5)
                                             .multilineTextAlignment(.center)
@@ -136,10 +130,10 @@ struct GamePlayView: View {
                                         .easeInOut(duration: 0.7)
                                     }
                                     .onTapGesture {
+                                        game.revealedHint()
                                         withAnimation(.easeOut(duration: 0.5)) {
                                             revealBook = true
                                         }
-                                        game.answer(correctly: false)
                                         Task { await playHintSFX() }
                                     }
                                     .rotation3DEffect(.degrees(revealBook ? 720 : 0), axis: (x: 0, y: 1, z: 0))
@@ -163,13 +157,51 @@ struct GamePlayView: View {
 
                     // MARK: Answers
                     Spacer()
+                    
+                    LazyVGrid(columns: [GridItem(spacing: -50), GridItem()]) {
+                        ForEach(game.answers, id: \.self) { answer in
+                            Group {
+                                if animateViewsIn {
+                                    Button {
+                                        let isCorrect = answer == game.currentQuestion.answer
+                                        tappedCorrectAnswer = isCorrect
+
+                                        let attempts = game.answer(correctly: isCorrect)
+                                        if attempts == 0 {
+                                            revealHint = false
+                                            revealBook = false
+                                        }
+                                        
+                                        Task {
+                                            if isCorrect {
+                                                await playCorrectSFX()
+                                            } else {
+                                                await playWrongSFX()
+                                            }
+                                        }
+                                    } label: {
+                                        Text(answer)
+                                            .padding(10)
+                                            .minimumScaleFactor(0.5)
+                                            .multilineTextAlignment(.center)
+                                            .frame(width: geo.size.width / 3, height: geo.size.height / 9)
+                                    }
+                                    .buttonStyle(.glass)
+                                    .transition(.offset(y: geo.size.height / 3))
+                                }
+                            }
+                            .animation(.easeOut(duration: 0.5).delay(1.5), value: animateViewsIn)
+                        }
+                    }
+                    .layoutPriority(1)
+                    
+                    Spacer(minLength: 10)
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
                 
                 // MARK: Celebration
             }
             .frame(width: geo.size.width, height: geo.size.height)
-            .padding(.top)
         }
         .ignoresSafeArea()
         .onAppear {

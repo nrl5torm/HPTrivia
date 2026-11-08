@@ -59,15 +59,24 @@ class GameViewModel {
         currentQuestionPoints = 5
     }
     
-    public func answer(correctly: Bool) {
-        if correctly {
-            doneQuestionIds.append(currentQuestion.id)
-            currentScore += currentQuestionPoints
-            
-            setNewQuestion()
-        } else {
+    public func revealedHint() {
+        if currentQuestionPoints > 0 {
             currentQuestionPoints -= 1
         }
+    }
+    
+    public func answer(correctly: Bool) -> Int {
+        if !correctly && currentQuestionPoints >= 3 {
+            currentQuestionPoints -= 3
+            return 1
+        }
+        
+        if correctly {
+            currentScore += currentQuestionPoints
+        }
+        doneQuestionIds.append(currentQuestion.id)
+        setNewQuestion()
+        return 0
     }
     
     public func endGame() {
