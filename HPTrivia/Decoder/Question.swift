@@ -20,6 +20,6 @@ struct Question: Decodable {
     let hint: String
     
     static public var none: Question {
-        Question(id: 0, question: "", answer: "", wrong: [], book: 0, hint: "")
+        Question(id: -1, question: "", answer: "", wrong: [], book: 0, hint: "")
     }
 }

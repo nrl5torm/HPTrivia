@@ -3,6 +3,9 @@
 .AppleDouble
 ._*
 
+# VScode
+.vscode/
+
 # Xcode build products and derived data
 build/
 DerivedData/

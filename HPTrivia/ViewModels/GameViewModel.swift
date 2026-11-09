@@ -25,7 +25,7 @@ class GameViewModel {
     private(set) var doneQuestionIds: [Int] = []
     
     private(set) var currentQuestion = Question.none
-    private(set) var answers: [String] = []
+    public var possibleAnswers: [Answer] = []
     
     public func startGame() throws {
         doneQuestionIds = []
@@ -48,13 +48,19 @@ class GameViewModel {
             doneQuestionIds = []
         }
         
+        if currentQuestion.id > 0 {
+            doneQuestionIds.append(currentQuestion.id)
+        }
+        
         currentQuestion = activeQuestions.filter { question in
             !doneQuestionIds.contains(question.id)
         }.randomElement()!
         
-        answers = [currentQuestion.answer]
-        answers.append(contentsOf: currentQuestion.wrong)
-        answers.shuffle()
+        possibleAnswers = [Answer.correct(id: 0, text: currentQuestion.answer)]
+        for i in 0 ..< currentQuestion.wrong.count {
+            possibleAnswers.append(Answer(id: i + 1, text: currentQuestion.wrong[i]))
+        }
+        possibleAnswers.shuffle()
         
         currentQuestionPoints = 5
     }
@@ -65,18 +71,12 @@ class GameViewModel {
         }
     }
     
-    public func answer(correctly: Bool) -> Int {
-        if !correctly && currentQuestionPoints >= 3 {
-            currentQuestionPoints -= 3
-            return 1
-        }
-        
-        if correctly {
+    public func answer(correctly: Bool) {
+        if !correctly {
+            currentQuestionPoints -= 2
+        } else {
             currentScore += currentQuestionPoints
         }
-        doneQuestionIds.append(currentQuestion.id)
-        setNewQuestion()
-        return 0
     }
     
     public func endGame() {

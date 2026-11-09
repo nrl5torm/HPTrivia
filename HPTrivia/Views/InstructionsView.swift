@@ -9,7 +9,7 @@ import SwiftUI
 
 struct InstructionsView: View {
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         ZStack {
             Image(.parchment)
@@ -18,34 +18,34 @@ struct InstructionsView: View {
                 .scaledToFill()
                 .background(.brown)
                 .frame(width: 0)
-            
+
             VStack {
                 Image(.appiconwithradius)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150)
                     .padding(.top, 30)
-                
+
                 ScrollView {
                     Text("How To Play")
                         .font(.custom("PartyLetPlain", size: 72))
                         .padding()
-                    
+
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Welcome to HP Trivia! In this game you will be asked random questions from the HP books and you must try to find the right answer on your first guess or you will lose points!😱")
-                        Text("Each question is worth 5 points, but if you give a wrong answer, you lose 3 points and thus your next guess will be your last.")
-                        Text("If you are struggling with a question, there is an option to reveal a hint or reveal the book related to the question. But beware! Using these removes 1 point each.")
+                        Text("Welcome to HP Trivia! In this game you will be asked random questions from the HP books and you must guess the right answer or you will lose points!😱")
+                        Text("Each question is worth 5 points, but if you guess wrong, you lose 2 points for each wrong answer.")
+                        Text("If you are struggling with a question, there is an option to reveal a hint or reveal the book related to the question. But beware! Using these also removes points (1 point each).")
                         Text("When you select the correct answer, you will be awarded all the points left for that question and they will be added to your score.")
                     }
                     .font(.title3)
                     .padding(.horizontal)
-                    
+
                     Text("Good Luck!")
                         .font(.custom("PartyLetPlain", size: 60))
                         .padding(.top, 2)
                 }
                 .foregroundStyle(.black)
-                
+
                 Button {
                     dismiss()
                 } label: {
