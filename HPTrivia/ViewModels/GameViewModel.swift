@@ -22,7 +22,7 @@ class GameViewModel {
     
     private(set) var books = DecodedQuestions().books
     private(set) var activeQuestions: [Question] = []
-    private(set) var doneQuestionIds: [Int] = []
+    private(set) var doneQuestionIds: [Int] = [] // TODO: move to Question status
     
     private(set) var currentQuestion = Question.none
     public var possibleAnswers: [Answer] = []
@@ -40,16 +40,12 @@ class GameViewModel {
             throw GameError.noQuestionsFound
         }
         
-        setNewQuestion()
+        nextQuestion()
     }
     
-    private func setNewQuestion() {
+    public func nextQuestion() {
         if doneQuestionIds.count == activeQuestions.count {
             doneQuestionIds = []
-        }
-        
-        if currentQuestion.id > 0 {
-            doneQuestionIds.append(currentQuestion.id)
         }
         
         currentQuestion = activeQuestions.filter { question in
@@ -75,7 +71,10 @@ class GameViewModel {
         if !correctly {
             currentQuestionPoints -= 2
         } else {
-            currentScore += currentQuestionPoints
+            withAnimation {
+                currentScore += currentQuestionPoints
+            }
+            doneQuestionIds.append(currentQuestion.id)
         }
     }
     
