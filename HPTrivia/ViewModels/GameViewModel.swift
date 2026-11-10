@@ -27,6 +27,19 @@ class GameViewModel {
     private(set) var currentQuestion = Question.none
     public var possibleAnswers: [Answer] = []
     
+    public var congratsMessage: String {
+        return switch currentQuestionPoints {
+        case let q where q <= 0:
+            "Merlin's Beard!\n\(currentQuestionPoints) points for Gryffindor"
+        case let q where q == 1:
+            "Not too shabby!\n1 point for Gryffindor"
+        case let q where q > 4:
+            "Brilliant!\n\(currentQuestionPoints) points for Gryffindor"
+        default:
+            "Wicked!\n\(currentQuestionPoints) points for Gryffindor"
+        }
+    }
+    
     public func startGame() throws {
         doneQuestionIds = []
         
@@ -69,11 +82,9 @@ class GameViewModel {
     
     public func answer(correctly: Bool) {
         if !correctly {
-            currentQuestionPoints -= 2
+            currentQuestionPoints -= min(currentQuestionPoints, 2)
         } else {
-            withAnimation {
-                currentScore += currentQuestionPoints
-            }
+            currentScore += currentQuestionPoints
             doneQuestionIds.append(currentQuestion.id)
         }
     }

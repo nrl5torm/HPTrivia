@@ -20,11 +20,11 @@ struct GamePlayView: View {
     @State private var error: Error?
     
     @State private var animateViewsIn = false
-    
     @State private var revealHint = false
     @State private var revealBook = false
     @State private var tappedCorrectAnswer = false
     @State private var showNextButton = false
+    @State private var showBigScore = false
     
     private let mp3 = "mp3"
     
@@ -47,7 +47,7 @@ struct GamePlayView: View {
                         Text("\(game.currentScore)")
                             .font(.title3)
                             .bold()
-                            .scaleEffect(tappedCorrectAnswer && !showNextButton ? 2 : 1)
+                            .scaleEffect(showBigScore ? 2 : 1.1)
                         
                         Spacer()
                         
@@ -75,13 +75,15 @@ struct GamePlayView: View {
                                 .transition(.scale)
                         }
                     }
-                    .animation(.easeInOut(duration: 2), value: animateViewsIn)
-                    .opacity(tappedCorrectAnswer ? 0.5 : 1)
+                    .animation(.easeInOut(duration: animateViewsIn ? 2 : 0), value: animateViewsIn)
+                    .opacity(tappedCorrectAnswer ? 0.1 : 1)
 
                     Spacer()
                     
                     // MARK: Hints
                     HStack {
+                        Spacer()
+                        
                         Group {
                             if animateViewsIn {
                                 Image(systemName: "questionmark.app.fill")
@@ -89,7 +91,6 @@ struct GamePlayView: View {
                                     .scaledToFit()
                                     .frame(width: 100)
                                     .foregroundStyle(.accent)
-                                    .padding()
                                     .transition(.offset(x: -geo.size.width / 2))
                                     .phaseAnimator([0, tappedCorrectAnswer ? 0 : 5]) { content, phase in
                                         content.rotationEffect(.degrees(-10 - phase))
@@ -109,7 +110,7 @@ struct GamePlayView: View {
                                     .opacity(revealHint ? 0 : 1)
                                     .overlay {
                                         Text(game.currentQuestion.hint)
-                                            .padding(.leading, 30)
+                                            .frame(width: geo.size.width / 3)
                                             .minimumScaleFactor(0.5)
                                             .multilineTextAlignment(.center)
                                             .opacity(revealHint ? 1 : 0)
@@ -118,7 +119,7 @@ struct GamePlayView: View {
                             }
                         }
                         
-                        Spacer()
+                        Spacer(minLength: geo.size.width / 4)
                         
                         Group {
                             if animateViewsIn {
@@ -127,7 +128,6 @@ struct GamePlayView: View {
                                     .scaledToFit()
                                     .frame(width: 100)
                                     .foregroundStyle(.accent)
-                                    .padding()
                                     .transition(.offset(x: geo.size.width / 2))
                                     .phaseAnimator([0, tappedCorrectAnswer ? 0 : 5]) { content, phase in
                                         content.rotationEffect(.degrees(10 + phase))
@@ -149,20 +149,21 @@ struct GamePlayView: View {
                                         Image(game.currentQuestion.bookName)
                                             .resizable()
                                             .scaledToFit()
-                                            .padding(.trailing, 30)
                                             .opacity(revealBook ? 1 : 0)
                                             .scaleEffect(revealBook ? 1.4 : 0.5)
                                             .shadow(radius: 3)
                                     }
                             }
                         }
+                        
+                        Spacer()
                     }
                     .padding()
-                    .animation(.easeInOut(duration: 0.5).delay(1.8), value: animateViewsIn)
+                    .animation(.easeInOut(duration: animateViewsIn ? 0.5 : 0).delay(animateViewsIn ? 1.8 : 0), value: animateViewsIn)
                     .opacity(tappedCorrectAnswer ? 0.1 : 1)
                     .disabled(tappedCorrectAnswer)
 
-                    // MARK: Answer propositions
+                    // MARK: Possible answers
                     Spacer()
                     
                     LazyVGrid(columns: [GridItem(spacing: -50), GridItem()]) {
@@ -171,20 +172,16 @@ struct GamePlayView: View {
                                 if animateViewsIn {
                                     Button {
                                         game.answer(correctly: answer.isCorrect)
-                                        
-                                        if answer.isCorrect {
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                                withAnimation {
+                                        withAnimation(.easeOut(duration: 1)) {
+                                            if answer.isCorrect {
+                                                tappedCorrectAnswer = true
+                                                showBigScore = true
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                                     showNextButton = true
                                                 }
                                             }
-                                        }
-
-                                        withAnimation(.easeOut(duration: 1)) {
                                             game.possibleAnswers[i].alreadyTapped = true
-                                            tappedCorrectAnswer = answer.isCorrect
                                         }
-                                        
                                         Task {
                                             if answer.isCorrect {
                                                 await playCorrectSFX()
@@ -208,13 +205,13 @@ struct GamePlayView: View {
                                         insertion: .offset(y: geo.size.height / 3),
                                         removal: .opacity))
                                     .scaleEffect(answer.alreadyTapped && !answer.isCorrect ? 0.6 : 1)
-                                    .sensoryFeedback(.error, trigger: !tappedCorrectAnswer && answer.alreadyTapped)
+                                    .sensoryFeedback(.error, trigger: !answer.isCorrect && answer.alreadyTapped)
                                 }
                             }
                             .opacity(tappedCorrectAnswer ? 0.1 : 1)
                         }
                     }
-                    .animation(.easeInOut(duration: 0.5).delay(1.5), value: animateViewsIn)
+                    .animation(.easeInOut(duration: animateViewsIn ? 0.5 : 0).delay(animateViewsIn ? 1.5 : 0), value: animateViewsIn)
                     .layoutPriority(1)
                     
                     Spacer(minLength: 10)
@@ -223,13 +220,11 @@ struct GamePlayView: View {
                 
                 // MARK: Celebration
                 VStack {
+                    Spacer(minLength: geo.size.height / 3)
+
                     Group {
                         if tappedCorrectAnswer {
-                            Spacer(minLength: geo.size.height / 2.5)
-                            
                             Text(game.currentQuestion.answer)
-                                .shadow(color: .white, radius: 2)
-                                .shadow(color: .white, radius: 5)
                                 .padding(10)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.center)
@@ -237,27 +232,38 @@ struct GamePlayView: View {
                                 .scaleEffect(tappedCorrectAnswer ? 2 : 1)
                                 .matchedGeometryEffect(id: game.currentQuestion.id + 10, in: namespace)
                             
-                            Text(game.currentQuestionPoints > 1 ? "Brilliant!\n \(game.currentQuestionPoints) points for Gryffindor" :
-                                    game.currentQuestionPoints < 1 ? "Sorry!\n0 points for Gryffindor" : "Not bad!\n1 point for Gryffindor")
-                            .font(.custom("PartyLetPlain", size: 60))
-                            .multilineTextAlignment(.center)
-                            .minimumScaleFactor(0.5)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 100)
-                            .transition(.asymmetric(insertion: .offset(y: geo.size.height / 3), removal: .opacity))
+                            Text(game.congratsMessage)
+                                .font(.custom("PartyLetPlain", size: 60))
+                                .foregroundStyle(.accent)
+                                .shadow(color: .white, radius: 2)
+                                .shadow(color: .white, radius: 5)
+                                .multilineTextAlignment(.center)
+                                .minimumScaleFactor(0.5)
+                                .padding(20)
+                                .padding(.top, 30)
+                                .frame(height: geo.size.height / 4)
+                                .transition(.offset(y: geo.size.height / 3))
                         }
                     }
-                    .animation(.easeInOut(duration: 1), value: tappedCorrectAnswer)
+                    .animation(.easeInOut(duration: tappedCorrectAnswer ? 1 : 0), value: tappedCorrectAnswer)
 
                     VStack {
                         if showNextButton {
                             Button {
+                                withAnimation(.easeOut(duration: 1)) {
+                                    showBigScore = false
+                                }
+                                animateViewsIn = false
                                 revealHint = false
                                 revealBook = false
-                                tappedCorrectAnswer = false
                                 showNextButton = false
                                 
-                                game.nextQuestion()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    tappedCorrectAnswer = false
+
+                                    game.nextQuestion()
+                                    animateViewsIn = true
+                                }
                             } label: {
                                 Text("Next")
                                     .font(.largeTitle)
@@ -272,11 +278,11 @@ struct GamePlayView: View {
                             }
                         }
                     }
-                    .animation(.easeInOut(duration: 0.5), value: showNextButton)
+                    .animation(.easeInOut(duration: showNextButton ? 1 : 0), value: showNextButton)
                     
-                    Spacer()
+                    Spacer(); Spacer()
                 }
-                .frame(width: geo.size.width)
+                .frame(width: geo.size.width, height: geo.size.height)
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -354,7 +360,7 @@ struct GamePlayView: View {
             musicPlayer = player
             
             player.numberOfLoops = -1
-            player.volume = 0.1
+            player.volume = 0.2
             
             Task.detached(priority: .background) {
                 player.prepareToPlay()

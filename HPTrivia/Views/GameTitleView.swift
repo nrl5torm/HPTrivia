@@ -75,7 +75,7 @@ struct GameTitleView: View {
     }
     
     private func startMusic() async {
-        let soundFile = "magic-in-the-air"
+        let soundFile = ["magic-in-the-air", "school-of-magic"].randomElement()!
         
         guard let sound = Bundle.main.path(forResource: soundFile, ofType: "mp3") else {
             print("missing sound file \(soundFile)")
