@@ -40,6 +40,15 @@ class GameViewModel {
         }
     }
     
+    private let saveURL = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first!.appending(path: "latestScores.json")
+    
+    init() {
+        loadScores()
+    }
+    
     public func startGame() throws {
         doneQuestionIds = []
         
@@ -93,6 +102,7 @@ class GameViewModel {
         latestScores[2] = latestScores[1]
         latestScores[1] = latestScores[0]
         latestScores[0] = Score(id: latestScores[0].id - 1, name: userName, points: currentScore)
+        saveScores()
         
         currentScore = 0
         activeQuestions = []
@@ -100,6 +110,24 @@ class GameViewModel {
     
     public func changeStatusOf(book id: Int, to status: Book.Status) {
         books[id - 1].status = status
+    }
+    
+    private func saveScores() {
+        do {
+            let data = try JSONEncoder().encode(latestScores)
+            try data.write(to: saveURL)
+        } catch {
+            print("Error: unable to save data. \(error)")
+        }
+    }
+    
+    private func loadScores() {
+        do {
+            let data = try Data(contentsOf: saveURL)
+            latestScores = try JSONDecoder().decode([Score].self, from: data)
+        } catch {
+            print("INFO: no saved score data. \(error)")
+        }
     }
 }
 
