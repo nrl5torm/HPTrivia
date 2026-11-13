@@ -15,6 +15,10 @@ class SettingsStoreViewModel {
     
     private var updates: Task<Void, Never>? = nil
     
+    init() {
+        updates = watchForUpdates()
+    }
+    
     func loadProducts() async {
         do {
             products = try await Product.products(for: ["hp4", "hp5", "hp6", "hp7"])
@@ -53,6 +57,35 @@ class SettingsStoreViewModel {
             }
         } catch {
             print("ERROR: unable to purchase product \(product.id). \(error)")
+        }
+    }
+    
+    private func checkPurchased() async -> Void {
+        for product in products {
+            for await entitlement in product.currentEntitlements {
+                switch entitlement {
+                    
+                case .unverified(let transaction, let verifyError):
+                    print("ERROR: cannot verify \(transaction). \(verifyError)")
+                    
+                case .verified(let transaction):
+                    if transaction.revocationDate == nil {
+                        purchased.insert(transaction.productID)
+                    } else {
+                        purchased.remove(transaction.productID)
+                        
+                        print("INFO: purchase of product \(transaction.productID) was revoked on \(transaction.revocationDate!).")
+                    }
+                }
+            }
+        }
+    }
+    
+    private func watchForUpdates() -> Task<Void, Never> {
+        Task(priority: .background) {
+            for await _ in Transaction.updates {
+                await checkPurchased()
+            }
         }
     }
 }
