@@ -11,9 +11,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(GameViewModel.self) private var game
     
-    @State private var showTmpAlert = false
-    
-    private var store = SettingsStoreViewModel()
+    private var store = StoreViewModel()
     
     private var anyActiveBook: Bool {
         game.books.contains { book in
@@ -47,25 +45,29 @@ struct SettingsView: View {
                         ForEach(game.books) { book in
                             switch book.status {
                                 
-                            case .active:
+                            case let status where status == .active || status == .locked && store.purchased.contains(book.imageName):
                                 ActiveBookView(book: book)
-                                .onTapGesture {
-                                    game.changeStatusOf(book: book.id, to: .inactive)
-                                }
+                                    .onTapGesture {
+                                        game.changeStatusOf(book: book.id, to: .inactive)
+                                    }
+                                    .task {
+                                        game.changeStatusOf(book: book.id, to: .active)
+                                    }
                                 
-                            case .inactive:
+                            case let status where status == .inactive:
                                 InactiveBookView(book: book)
-                                .onTapGesture {
-                                    game.changeStatusOf(book: book.id, to: .active)
-                                }
+                                    .onTapGesture {
+                                        game.changeStatusOf(book: book.id, to: .active)
+                                    }
                                 
-                            case .locked:
+                            default: // status == .locked && !purchased
                                 LockedBookView(book: book)
-                                .onTapGesture {
-                                    showTmpAlert.toggle()
-                                    
-                                    game.changeStatusOf(book: book.id, to: .active)
-                                }
+                                    .onTapGesture {
+                                        let pack = store.getQuestionPack(for: book)
+                                        Task {
+                                            await store.purchase(questionPack: pack)
+                                        }
+                                    }
                             }
                         }
                     }
@@ -87,9 +89,8 @@ struct SettingsView: View {
             .disabled(!anyActiveBook)
         }
         .interactiveDismissDisabled(!anyActiveBook)
-        .alert("Thank you for purchasing this new question pack!", isPresented: $showTmpAlert) {}
         .task {
-            await store.loadProducts()
+            await store.loadOptionalQuestionPacks()
         }
     }
 }

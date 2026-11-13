@@ -1,5 +1,5 @@
 //
-//  SettingsStoreViewModel.swift
+//  StoreViewModel.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 13/11/2026.
@@ -9,8 +9,8 @@ import StoreKit
 
 @MainActor
 @Observable
-class SettingsStoreViewModel {
-    var products: [Product] = []
+class StoreViewModel {
+    var questionPacks: [Product] = []
     var purchased = Set<String>()
     
     private var updates: Task<Void, Never>? = nil
@@ -19,20 +19,22 @@ class SettingsStoreViewModel {
         updates = watchForUpdates()
     }
     
-    func loadProducts() async {
+    func loadOptionalQuestionPacks() async {
         do {
-            products = try await Product.products(for: ["hp4", "hp5", "hp6", "hp7"])
-            products.sort {
-                $0.displayName < $1.displayName
-            }
+            let productIds = ["hp4", "hp5", "hp6", "hp7"]
+            questionPacks = try await Product.products(for: productIds)
         } catch {
-            print("ERROR: unable to load products. \(error)")
+            print("ERROR: unable to load question pack products. \(error)")
         }
     }
     
-    func purchase(product: Product) async {
+    func getQuestionPack(for book: Book) -> Product {
+        questionPacks.first { $0.id == book.imageName }!
+    }
+    
+    func purchase(questionPack: Product) async {
         do {
-            let result = try await product.purchase()
+            let result = try await questionPack.purchase()
             switch result {
                 
             case .success(let verification):
@@ -44,25 +46,26 @@ class SettingsStoreViewModel {
                 case .verified(let transaction):
                     purchased.insert(transaction.productID)
                     await transaction.finish()
+                    print("INFO: successfully purchased question pack \(transaction.productID).")
                 }
                 
             case .userCancelled:
-                print("INFO: user cancelled purchase of product \(product.id).")
+                print("INFO: user cancelled purchase of question pack \(questionPack.id).")
                 break
             case .pending:
-                print("INFO: pending result for purchase of product \(product.id).")
+                print("INFO: pending result for purchase of question pack \(questionPack.id).")
 
             @unknown default:
-                print("WARNING: unknown result while purchasing product \(product.id).")
+                print("WARNING: unhandled result while purchasing question pack \(questionPack.id).")
             }
         } catch {
-            print("ERROR: unable to purchase product \(product.id). \(error)")
+            print("ERROR: unable to purchase question pack \(questionPack.id). \(error)")
         }
     }
     
     private func checkPurchased() async -> Void {
-        for product in products {
-            for await entitlement in product.currentEntitlements {
+        for pack in questionPacks {
+            for await entitlement in pack.currentEntitlements {
                 switch entitlement {
                     
                 case .unverified(let transaction, let verifyError):
@@ -74,7 +77,7 @@ class SettingsStoreViewModel {
                     } else {
                         purchased.remove(transaction.productID)
                         
-                        print("INFO: purchase of product \(transaction.productID) was revoked on \(transaction.revocationDate!).")
+                        print("INFO: purchase of question pack \(transaction.productID) was revoked on \(transaction.revocationDate!).")
                     }
                 }
             }

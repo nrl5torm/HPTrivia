@@ -50,7 +50,7 @@ class DecodedQuestions {
         for i in (1...questions.count) {
             books.append(
                 Book(id: i,
-                     image: "hp\(i)",
+                     imageName: "hp\(i)",
                      questions: questions[i - 1],
                      status: i <= 2 ? .active : (i <= 3 ? .inactive : .locked)))
         }

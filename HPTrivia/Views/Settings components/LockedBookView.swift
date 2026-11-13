@@ -12,7 +12,7 @@ struct LockedBookView: View {
 
     var body: some View {
         ZStack {
-            Image(book.image)
+            Image(book.imageName)
                 .resizable()
                 .scaledToFit()
                 .shadow(radius: 7)

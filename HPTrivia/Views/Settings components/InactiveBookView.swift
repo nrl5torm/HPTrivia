@@ -12,7 +12,7 @@ struct InactiveBookView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Image(book.image)
+            Image(book.imageName)
                 .resizable()
                 .scaledToFit()
                 .shadow(radius: 7)
