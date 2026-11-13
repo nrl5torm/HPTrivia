@@ -13,6 +13,8 @@ struct SettingsView: View {
     
     @State private var showTmpAlert = false
     
+    private var store = SettingsStoreViewModel()
+    
     private var anyActiveBook: Bool {
         game.books.contains { book in
             book.status == .active
@@ -86,6 +88,9 @@ struct SettingsView: View {
         }
         .interactiveDismissDisabled(!anyActiveBook)
         .alert("Thank you for purchasing this new question pack!", isPresented: $showTmpAlert) {}
+        .task {
+            await store.loadProducts()
+        }
     }
 }
 
