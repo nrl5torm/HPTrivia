@@ -25,4 +25,34 @@ class SettingsStoreViewModel {
             print("ERROR: unable to load products. \(error)")
         }
     }
+    
+    func purchase(product: Product) async {
+        do {
+            let result = try await product.purchase()
+            switch result {
+                
+            case .success(let verification):
+                switch verification {
+                    
+                case .unverified(let transaction, let verifyError):
+                    print("ERROR: cannot verify \(transaction). \(verifyError)")
+                    
+                case .verified(let transaction):
+                    purchased.insert(transaction.productID)
+                    await transaction.finish()
+                }
+                
+            case .userCancelled:
+                print("INFO: user cancelled purchase of product \(product.id).")
+                break
+            case .pending:
+                print("INFO: pending result for purchase of product \(product.id).")
+
+            @unknown default:
+                print("WARNING: unknown result while purchasing product \(product.id).")
+            }
+        } catch {
+            print("ERROR: unable to purchase product \(product.id). \(error)")
+        }
+    }
 }
