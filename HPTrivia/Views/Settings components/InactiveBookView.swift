@@ -31,5 +31,5 @@ struct InactiveBookView: View {
 }
 
 #Preview {
-    InactiveBookView(book: DecodedQuestions().books.first!)
+    InactiveBookView(book: Decoder().decodedBooks.first!)
 }

@@ -30,5 +30,5 @@ struct LockedBookView: View {
 }
 
 #Preview {
-    LockedBookView(book: DecodedQuestions().books.first!)
+    LockedBookView(book: Decoder().decodedBooks.first!)
 }

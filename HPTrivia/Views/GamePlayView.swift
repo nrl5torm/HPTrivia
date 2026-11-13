@@ -24,6 +24,7 @@ struct GamePlayView: View {
     @State private var revealBook = false
     @State private var tappedCorrectAnswer = false
     @State private var showNextButton = false
+    @State private var scaleNextButton = false
     @State private var showBigScore = false
     
     private let mp3 = "mp3"
@@ -175,7 +176,9 @@ struct GamePlayView: View {
                                         withAnimation(.easeOut(duration: 1)) {
                                             if answer.isCorrect {
                                                 tappedCorrectAnswer = true
-                                                showBigScore = true
+                                                withAnimation(.easeOut(duration: 3)) {
+                                                    showBigScore = true
+                                                }
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                                     showNextButton = true
                                                 }
@@ -235,7 +238,6 @@ struct GamePlayView: View {
                             Text(game.congratsMessage)
                                 .font(.custom("PartyLetPlain", size: 60))
                                 .foregroundStyle(.accent)
-                                .shadow(color: .white, radius: 2)
                                 .shadow(color: .white, radius: 5)
                                 .multilineTextAlignment(.center)
                                 .minimumScaleFactor(0.5)
@@ -250,18 +252,20 @@ struct GamePlayView: View {
                     VStack {
                         if showNextButton {
                             Button {
-                                withAnimation(.easeOut(duration: 1)) {
+                                withAnimation(.easeOut(duration: 0.5)) {
                                     showBigScore = false
+                                    showNextButton = false
+                                    scaleNextButton = false
                                 }
+                                
                                 animateViewsIn = false
                                 revealHint = false
                                 revealBook = false
-                                showNextButton = false
-                                
+
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    game.nextQuestion()
                                     tappedCorrectAnswer = false
 
-                                    game.nextQuestion()
                                     animateViewsIn = true
                                 }
                             } label: {
@@ -270,15 +274,18 @@ struct GamePlayView: View {
                                     .padding()
                             }
                             .buttonStyle(.glassProminent)
+                            .scaleEffect(scaleNextButton ? 0.8 : 1)
                             .transition(.opacity)
-                            .phaseAnimator([1, 0.8]) { content, phase in
-                                content.scaleEffect(phase)
-                            } animation: { _ in
-                                    .easeInOut(duration: 2)
+                            .onAppear {
+                                withAnimation(
+                                    .easeInOut(duration: 1.5)
+                                    .repeatForever()) {
+                                        scaleNextButton = true
+                                    }
                             }
                         }
                     }
-                    .animation(.easeInOut(duration: showNextButton ? 1 : 0), value: showNextButton)
+                    .animation(.easeInOut(duration: showNextButton ? 1 : 0.5), value: showNextButton)
                     
                     Spacer(); Spacer()
                 }

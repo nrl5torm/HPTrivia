@@ -1,5 +1,5 @@
 //
-//  DecodedQuestions.swift
+//  Decoder.swift
 //  HPTrivia
 //
 //  Created by Olivier Sbg on 03/11/2026.
@@ -8,13 +8,25 @@
 import Foundation
 
 @Observable
-class DecodedQuestions {
-    var books: [Book] = []
+class Decoder {
+    var decodedBooks: [Book] = []
+    
+    private let saveURL = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first!.appending(path: "books.json")
     
     init() {
-        let decodedQuestions = decodeQuestions()
-        let organizedQuestions = organizeQuestions(decodedQuestions)
-        populateBooks(with: organizedQuestions)
+        loadBooks()
+    }
+    
+    public func saveBooks() {
+        do {
+            let data = try JSONEncoder().encode(decodedBooks)
+            try data.write(to: saveURL)
+        } catch {
+            print("Error: unable to save book status data. \(error)")
+        }
     }
     
     private func decodeQuestions() -> [Question] {
@@ -48,7 +60,7 @@ class DecodedQuestions {
     
     private func populateBooks(with questions: [[Question]]) {
         for i in (1...questions.count) {
-            books.append(
+            decodedBooks.append(
                 Book(id: i,
                      imageName: "hp\(i)",
                      questions: questions[i - 1],
@@ -56,14 +68,16 @@ class DecodedQuestions {
         }
     }
     
-    enum DecodingError: LocalizedError {
-        case missingFile(name: String)
-        
-        public var errorDescription: String? {
-            switch self {
-            case .missingFile(let file):
-                "Cannot decode missing file: \(file)."
-            }
+    private func loadBooks() {
+        do {
+            let data = try Data(contentsOf: saveURL)
+            decodedBooks = try JSONDecoder().decode([Book].self, from: data)
+        } catch {
+            print("INFO: no saved book status data. \(error)")
+            
+            let decodedQuestions = decodeQuestions()
+            let organizedQuestions = organizeQuestions(decodedQuestions)
+            populateBooks(with: organizedQuestions)
         }
     }
 }

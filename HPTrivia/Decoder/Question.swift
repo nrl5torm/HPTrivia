@@ -5,7 +5,7 @@
 //  Created by Olivier Sbg on 29/10/2026.
 //
 
-struct Question: Decodable {
+struct Question: Codable {
     let id: Int
 
     let question: String

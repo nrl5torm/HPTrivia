@@ -20,7 +20,11 @@ class GameViewModel {
         Score(id: 7, name: "Harry", points: 77)
     ]
     
-    private(set) var books = DecodedQuestions().books
+    private(set) var decoder = Decoder()
+    public var books: [Book] {
+        decoder.decodedBooks
+    }
+    
     private(set) var activeQuestions: [Question] = []
     private(set) var doneQuestionIds: [Int] = [] // TODO: move to Question status
     
@@ -109,7 +113,7 @@ class GameViewModel {
     }
     
     public func changeStatusOf(book id: Int, to status: Book.Status) {
-        books[id - 1].status = status
+        decoder.decodedBooks[id - 1].status = status
     }
     
     private func saveScores() {
@@ -117,7 +121,7 @@ class GameViewModel {
             let data = try JSONEncoder().encode(latestScores)
             try data.write(to: saveURL)
         } catch {
-            print("Error: unable to save data. \(error)")
+            print("Error: unable to save score data. \(error)")
         }
     }
     

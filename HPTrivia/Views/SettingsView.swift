@@ -78,6 +78,7 @@ struct SettingsView: View {
             .foregroundStyle(.black)
             
             Button {
+                game.decoder.saveBooks()
                 dismiss()
             } label: {
                 Text("Done")
@@ -88,7 +89,7 @@ struct SettingsView: View {
             .buttonStyle(.glass)
             .disabled(!anyActiveBook)
         }
-        .interactiveDismissDisabled(!anyActiveBook)
+        .interactiveDismissDisabled()
         .task {
             await store.loadOptionalQuestionPacks()
         }

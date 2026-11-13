@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-public struct Score: Identifiable, Encodable, Decodable {
+public struct Score: Codable, Identifiable {
     public let id: Int
     
     let name: String
